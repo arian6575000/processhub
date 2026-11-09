@@ -3,6 +3,9 @@ name: Build Android APK
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '.github/workflows/unzip.yml'
+      - '**.md'
   workflow_dispatch:
 
 permissions:
@@ -18,7 +21,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
       - uses: actions/setup-java@v4
         with:
@@ -26,30 +28,34 @@ jobs:
           java-version: 17
 
       - name: Install dependencies
+        working-directory: ProcessHub360
         run: npm install --legacy-peer-deps
 
       - name: Typecheck
+        working-directory: ProcessHub360
         run: npx tsc --noEmit
 
       - name: Run tests
+        working-directory: ProcessHub360
         run: npm test
 
       - name: Generate native Android project
+        working-directory: ProcessHub360
         run: npx expo prebuild --platform android --no-install
 
       - name: Build release APK
-        working-directory: android
+        working-directory: ProcessHub360/android
         run: ./gradlew assembleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx3g"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: ProcessHub360-apk
-          path: android/app/build/outputs/apk/release/*.apk
+          path: ProcessHub360/android/app/build/outputs/apk/release/*.apk
 
       - name: Publish APK as a GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-${{ github.run_number }}
           name: ProcessHub 360 APK #${{ github.run_number }}
-          files: android/app/build/outputs/apk/release/*.apk
+          files: ProcessHub360/android/app/build/outputs/apk/release/*.apk
