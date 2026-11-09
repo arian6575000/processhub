@@ -40,7 +40,7 @@ test('app-specific device ids keep licenses of different apps apart', () => {
   assert.equal(formatAppDeviceId('ProcessHub', HEX), 'ProcessHub-87A9-F285-E2DF');
   assert.notEqual(formatAppDeviceId('DarziHub', HEX), formatAppDeviceId('ProcessHub', HEX));
   const idA = 'DarziHub-87A9-F285-E2DF', idB = 'ProcessHub-87A9-F285-E2DF';
-  const lic = signLicense(buildPayload({ machineId: idA, clientName: 'C', planName: 'Pro', maxUsers: 1, features: {}, expiry: { days: 30 }, idFormat: 'any', project: { code: 'processhub360', legacy: false } }), kp.privateKeyHex);
+  const lic = signLicense(buildPayload({ machineId: idA, clientName: 'C', planName: 'Pro', maxUsers: 1, features: {}, expiry: { days: 30 }, idFormat: 'any', project: { code: 'processhub360' } }), kp.privateKeyHex);
   assert.equal(verifyLicense(lic, { publicKeyHex: kp.publicKeyHex, machineId: idA, projectCode: 'processhub360' }).ok, true);
   assert.deepEqual(verifyLicense(lic, { publicKeyHex: kp.publicKeyHex, machineId: idB, projectCode: 'processhub360' }), { ok: false, reason: 'machine' });
 });
