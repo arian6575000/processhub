@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPayload, generateKeyPair, signLicense, verifyLicense, PREFIX } from '../src/license/licenseCore';
+import { buildPayload, generateKeyPair, signLicense, verifyLicense, PREFIX, formatAppDeviceId } from '../src/license/licenseCore';
 
 const kp = generateKeyPair(), other = generateKeyPair();
 const DEV = 'AAAA-BBBB-CCCC-DDDD-EEEE';
@@ -32,4 +32,15 @@ test('a license with no project_code is rejected (stricter than DarziHub)', () =
 test('legacy hub prefixes are still accepted when signed by our key and bound to our project', () => {
   const lic = mk(); const body = lic.slice(PREFIX.length);
   assert.ok(v('RETAILX-LIC-' + body).ok);
+});
+
+test('app-specific device ids keep licenses of different apps apart', () => {
+  const kp = generateKeyPair();
+  const HEX = '87A9F285E2DF1234ABCD';
+  assert.equal(formatAppDeviceId('ProcessHub', HEX), 'ProcessHub-87A9-F285-E2DF');
+  assert.notEqual(formatAppDeviceId('DarziHub', HEX), formatAppDeviceId('ProcessHub', HEX));
+  const idA = 'DarziHub-87A9-F285-E2DF', idB = 'ProcessHub-87A9-F285-E2DF';
+  const lic = signLicense(buildPayload({ machineId: idA, clientName: 'C', planName: 'Pro', maxUsers: 1, features: {}, expiry: { days: 30 }, idFormat: 'any', project: { code: 'processhub360', legacy: false } }), kp.privateKeyHex);
+  assert.equal(verifyLicense(lic, { publicKeyHex: kp.publicKeyHex, machineId: idA, projectCode: 'processhub360' }).ok, true);
+  assert.deepEqual(verifyLicense(lic, { publicKeyHex: kp.publicKeyHex, machineId: idB, projectCode: 'processhub360' }), { ok: false, reason: 'machine' });
 });

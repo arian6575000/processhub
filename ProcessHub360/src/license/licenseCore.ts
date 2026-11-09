@@ -90,6 +90,14 @@ export function normalizeDeviceId(input: string): string | null {
 export function formatDeviceIdFromHex(hex: string): string {
   return normalizeDeviceId(hex.slice(0, 20))!;
 }
+/** App-specific Device ID: "<Prefix>-XXXX-XXXX-XXXX" (12 hex). The prefix keeps IDs of different apps apart. */
+export function formatAppDeviceId(prefix: string, hex: string): string {
+  const p = prefix.trim();
+  const h = hex.toUpperCase().replace(/[^0-9A-F]/g, "").slice(0, 12);
+  if (!/^[A-Za-z][A-Za-z0-9]*$/.test(p)) throw new Error("DEVICE_PREFIX must be letters/digits only (e.g. RetailXPOS)");
+  if (h.length !== 12) throw new Error("need at least 12 hex characters");
+  return `${p}-${h.match(/.{4}/g)!.join("-")}`;
+}
 export function newLicenseId(): string {
   return bytesToHex(nacl.randomBytes(5)).toUpperCase();
 }

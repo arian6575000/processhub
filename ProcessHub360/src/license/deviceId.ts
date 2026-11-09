@@ -1,25 +1,37 @@
-// Device ID for ProcessHub 360 (Android + iOS): SHA-256 of platform + stable device identifiers.
-// Install: npx expo install expo-application expo-device expo-crypto
+// Device ID for Expo / React Native client apps for ProcessHub 360.
+// Format: "<DEVICE_PREFIX>-XXXX-XXXX-XXXX". The hash includes the app prefix, so the SAME phone gets a DIFFERENT ID in every app.
 import { Platform } from "react-native";
 import * as Application from "expo-application";
 import * as Device from "expo-device";
 import * as Crypto from "expo-crypto";
-import { formatDeviceIdFromHex } from "./licenseCore";
+import { formatAppDeviceId, formatDeviceIdFromHex } from "./licenseCore";
+import { DEVICE_PREFIX } from "./config";
 
 let cached: string | null = null;
+let cachedLegacy: string | null = null;
 
-export async function getDeviceId(): Promise<string> {
-  if (cached) return cached;
+async function parts(): Promise<string> {
   const stableId =
     Platform.OS === "android"
       ? Application.getAndroidId() ?? ""
       : (await Application.getIosIdForVendorAsync()) ?? "";
-
-  const parts = [
+  return [
     Platform.OS, stableId, Device.brand ?? "", Device.manufacturer ?? "", Device.modelName ?? "",
     (Device.supportedCpuArchitectures ?? []).join(","),
-  ];
-  const hex = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, "PH360-DEVID-v1|" + parts.join("|"));
-  cached = formatDeviceIdFromHex(hex.toUpperCase()); // XXXX-XXXX-XXXX-XXXX-XXXX
+  ].join("|");
+}
+const sha = (s: string) => Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, s);
+
+export async function getDeviceId(): Promise<string> {
+  if (cached) return cached;
+  const hex = await sha(`PH360-DEVID-v2|${DEVICE_PREFIX}|` + (await parts()));
+  cached = formatAppDeviceId(DEVICE_PREFIX, hex);
   return cached;
+}
+
+/** Old app-independent ID (20 hex). Only used when ACCEPT_LEGACY_DEVICE_ID is on, for licenses issued before the prefix existed. */
+export async function getLegacyDeviceId(): Promise<string> {
+  if (cachedLegacy) return cachedLegacy;
+  cachedLegacy = formatDeviceIdFromHex((await sha("PH360-DEVID-v1|" + (await parts()))).toUpperCase());
+  return cachedLegacy;
 }

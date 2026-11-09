@@ -1,8 +1,8 @@
 // Offline license check (Ed25519). Storage: Android Keystore / iOS Keychain via expo-secure-store.
 import * as SecureStore from "expo-secure-store";
 import { hasFeature, Payload, Reason, verifyLicense, VerifyResult } from "./licenseCore";
-import { getDeviceId } from "./deviceId";
-import { KEY_CONFIGURED, PROJECT_CODE, PUBLIC_KEY_HEX } from "./config";
+import { getDeviceId, getLegacyDeviceId } from "./deviceId";
+import { ACCEPT_LEGACY_DEVICE_ID, KEY_CONFIGURED, PROJECT_CODE, PUBLIC_KEY_HEX } from "./config";
 
 export type CheckResult = VerifyResult | { ok: false; reason: "config" };
 
@@ -14,7 +14,9 @@ async function check(license: string): Promise<CheckResult> {
   if (!KEY_CONFIGURED) return { ok: false, reason: "config" };
   const seen = await SecureStore.getItemAsync(K_LASTSEEN, opts);
   const lastSeen = seen ? parseInt(seen, 10) || undefined : undefined;
-  const r = verifyLicense(license, { publicKeyHex: PUBLIC_KEY_HEX, machineId: await getDeviceId(), projectCode: PROJECT_CODE, lastSeen });
+  const base = { publicKeyHex: PUBLIC_KEY_HEX, projectCode: PROJECT_CODE, lastSeen };
+  let r = verifyLicense(license, { ...base, machineId: await getDeviceId() });
+  if (!r.ok && r.reason === "machine" && ACCEPT_LEGACY_DEVICE_ID) r = verifyLicense(license, { ...base, machineId: await getLegacyDeviceId() });
   if (r.ok) await SecureStore.setItemAsync(K_LASTSEEN, String(Math.max(Date.now(), lastSeen ?? 0)), opts);
   return r;
 }
