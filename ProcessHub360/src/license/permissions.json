@@ -1,0 +1,26 @@
+{
+  "project": {
+    "name": "ProcessHub 360",
+    "code": "processhub360",
+    "platform": "mobile",
+    "description": "Configurable processing, milling and business management"
+  },
+  "permission_schema": [
+    { "module": "processing", "label": "Processing", "features": [
+      { "key": "processing.jobs", "label": "Jobs and tokens", "default": true },
+      { "key": "processing.master_token", "label": "Master token orders", "default": true },
+      { "key": "processing.workflows", "label": "Custom workflows", "default": true }
+    ]},
+    { "module": "inventory", "label": "Inventory", "features": [
+      { "key": "inventory.stock", "label": "Business stock", "default": true }
+    ]},
+    { "module": "accounts", "label": "Accounts", "features": [
+      { "key": "accounts.cash", "label": "Cash and expenses", "default": true },
+      { "key": "accounts.reports", "label": "Reports", "default": true }
+    ]},
+    { "module": "system", "label": "System", "features": [
+      { "key": "system.multi_user", "label": "Multiple users", "default": true },
+      { "key": "system.cloud_sync", "label": "Cloud sync", "default": false }
+    ]}
+  ]
+}

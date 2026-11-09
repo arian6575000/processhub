@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "ProcessHub 360",
+    "slug": "processhub360",
+    "scheme": "processhub360",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": { "image": "./assets/splash-icon.png", "resizeMode": "contain", "backgroundColor": "#F3F5F4" },
+    "ios": { "supportsTablet": false, "bundleIdentifier": "com.processhub360.app" },
+    "android": {
+      "package": "com.processhub360.app",
+      "adaptiveIcon": { "backgroundColor": "#14634F", "foregroundImage": "./assets/android-icon-foreground.png" },
+      "predictiveBackGestureEnabled": false,
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "plugins": ["expo-router", "expo-sqlite", "expo-secure-store", "expo-font"],
+    "experiments": { "typedRoutes": false }
+  }
+}
